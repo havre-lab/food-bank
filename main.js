@@ -1,10 +1,16 @@
 var mainCanvas=document.getElementById("drawing");
 var ctx=mainCanvas.getContext("2d");
+
+var firework=document.getElementById("firework");
+
 var totalPercent=0;
 var displayPercent=0;
 var inputBar=document.getElementById("inputbar")
 var tempRed,tempBlue,tempGreen,tempColor;
 var gravity=0.5;
+//confettneed is how many confetti should be on screen, confettimes is to detect how many times to trigger confetti
+var confettNeed=0;
+var confettTimes=0;
 
 //unblur inputbar
 inputBar.focus()
@@ -13,21 +19,47 @@ var confettum=[]
 
 const multBase=6.05//6.05 as 1.00 for top bit, 0.5 radius of curve
 
+
+
+function bouncySize(){
+    var tempBounding=bouncyCanvas.getBoundingClientRect();
+    bouncyCanvas.width=tempBounding.width;
+    var tempSpace=window.innerHeight-tempBounding.top;
+    bouncyCanvas.style.height=tempSpace+"px";
+    bouncyCanvas.height=tempSpace;
+}
+
+//bouncy 610 logo
+var bouncyCanvas=document.getElementById("bouncy");
+bouncySize();
+var bouncySX=3;
+var bouncySY=3;
+var bouncyX=0;
+var bouncyY=0;
+var bctx=bouncyCanvas.getContext("2d");
+var logo610=document.getElementById("logo610");
+
 class ConFetti{
-    constructor(x,y,sx,sy,color){
+    constructor(x,y,sx,sy,color,delay=0){
         this.x=x
         this.y=y
         this.sx=sx
         this.sy=sy
         this.color=color
         this.size=10
+        this.delay=delay
     }
     update(){
-        this.x+=this.sx
-        this.y+=this.sy
-        this.sy+=gravity
-        ctx.fillStyle=this.color;
-        ctx.fillRect(this.x,this.y,this.size,this.size)
+        if(this.delay>0){
+            this.delay--
+        }else{
+           this.x+=this.sx
+            this.y+=this.sy
+            this.sy+=gravity
+            ctx.fillStyle=this.color;
+            ctx.fillRect(this.x,this.y,this.size,this.size) 
+        }
+        
     }
 }
 
@@ -150,22 +182,47 @@ function drawStuff(timestamp){
         confettum[i].update()
     }
     //confettum adding
-    if(confettum.length==0 && displayPercent>=99){
-        for(var i=0; i<3000; i++){
-            var tempConfColor;
-            switch(i%7){
-                case 0: tempConfColor="red"; break
-                case 1: tempConfColor="yellow"; break
-                case 2: tempConfcolor="green";break
-                case 3: tempConfColor="blue";break
-                case 4: tempConfColor="purple";break
-                case 5: tempConfColor="orange";break
-                case 6: tempConfColor="pink";break
-            }
-            confettum.push(new ConFetti(500,1000,Math.random()*40-20,Math.random()*-50,tempConfColor));
-        }
+    
+    if(displayPercent>totalPercent-2 && confettTimes>0){
+        firework.play()
+        confettTimes--;
+        confettNeed=totalPercent*50;
     }
     
+    for(var i=0; i<confettNeed-confettum.length; i++){
+        var tempConfColor;
+        switch(i%7){
+            case 0: tempConfColor="red"; break
+            case 1: tempConfColor="yellow"; break
+            case 2: tempConfcolor="green";break
+            case 3: tempConfColor="blue";break
+            case 4: tempConfColor="purple";break
+            case 5: tempConfColor="orange";break
+            case 6: tempConfColor="pink";break
+        }
+        confettum.push(new ConFetti(500,1000+Math.random()*500,Math.random()*40-20,Math.random()*-50,tempConfColor,i%4*50));
+    }
+    
+    //bouncy logo
+    //size is 50x50
+    var logoWidth=100;
+    var logoHeight=100;
+    bctx.clearRect(0,0,bouncyCanvas.width,bouncyCanvas.height);
+    bctx.drawImage(logo610,bouncyX,bouncyY,logoWidth,logoHeight);
+    bouncyX+=bouncySX;
+    bouncyY+=bouncySY;
+    if(bouncyX<0){
+        bouncyX=0; bouncySX*=-1;
+    }
+    if(bouncyX+logoWidth>bouncyCanvas.width){
+        bouncyX=bouncyCanvas.width-logoWidth; bouncySX*=-1;
+    }
+    if(bouncyY<0){
+        bouncyY=0; bouncySY*=-1;
+    }
+    if(bouncyY+logoHeight>bouncyCanvas.height){
+        bouncyY=bouncyCanvas.height-logoHeight; bouncySY*=-1;
+    }
 
 
     requestAnimationFrame(drawStuff);
@@ -178,7 +235,8 @@ function numberAffect(){
     }
 
     if(!isNaN(parseFloat(inputBar.value))){
-        totalPercent+=parseFloat(inputBar.value)   
+        totalPercent+=parseFloat(inputBar.value)
+        confettTimes++;
     }inputBar.value="";
 
     
@@ -192,5 +250,7 @@ document.addEventListener("keypress",function(ev){
 inputBar.addEventListener("blur",function(){
     setTimeout(function(){inputBar.focus()},0)
 })
+window.addEventListener("resize",bouncySize)
+document.addEventListener("scroll",bouncySize)//use this to resize bouncy canvas
 
 requestAnimationFrame(drawStuff);
