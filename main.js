@@ -2,6 +2,7 @@ var mainCanvas=document.getElementById("drawing");
 var ctx=mainCanvas.getContext("2d");
 
 var firework=document.getElementById("firework");
+var cheer=document.getElementById("cheer");
 
 var totalPercent=0;
 var displayPercent=0;
@@ -20,24 +21,19 @@ var confettum=[]
 const multBase=6.05//6.05 as 1.00 for top bit, 0.5 radius of curve
 
 
+//timing
+var lastTime=performance.now();
 
-function bouncySize(){
-    var tempBounding=bouncyCanvas.getBoundingClientRect();
-    bouncyCanvas.width=tempBounding.width;
-    var tempSpace=window.innerHeight-tempBounding.top;
-    bouncyCanvas.style.height=tempSpace+"px";
-    bouncyCanvas.height=tempSpace;
+function sizeImage(){
+    var left=document.getElementById("left");
+    var right=document.getElementById("right");
+    var boundingBox=mainCanvas.getBoundingClientRect();
+    var pixelDiff=100
+    left.style.width=boundingBox.left-pixelDiff+"px";
+    left.style.height=boundingBox.left-pixelDiff+"px";
+    right.style.width=(window.innerWidth-boundingBox.right)-pixelDiff+"px";
+    right.style.height=(window.innerWidth-boundingBox.right)-pixelDiff+"px";
 }
-
-//bouncy 610 logo
-var bouncyCanvas=document.getElementById("bouncy");
-bouncySize();
-var bouncySX=3;
-var bouncySY=3;
-var bouncyX=0;
-var bouncyY=0;
-var bctx=bouncyCanvas.getContext("2d");
-var logo610=document.getElementById("logo610");
 
 class ConFetti{
     constructor(x,y,sx,sy,color,delay=0){
@@ -51,11 +47,11 @@ class ConFetti{
     }
     update(){
         if(this.delay>0){
-            this.delay--
+            this.delay-=delta
         }else{
-           this.x+=this.sx
-            this.y+=this.sy
-            this.sy+=gravity
+           this.x+=this.sx*delta
+            this.y+=this.sy*delta
+            this.sy+=gravity*delta
             ctx.fillStyle=this.color;
             ctx.fillRect(this.x,this.y,this.size,this.size) 
         }
@@ -68,15 +64,15 @@ function greyPen(lineWidth=10){
     ctx.lineWidth=lineWidth;
 }
 
-function drawStuff(timestamp){
+function drawStuff(){
     //
 
     //1000 size canvas
-    var prevTime=timestamp
     var currentTime=performance.now()
-    delta=(currentTime-prevTime)/(1000/60)
+    delta=(currentTime-lastTime)/(1000/60)
+    lastTime=currentTime;
     
-    displayPercent+=(totalPercent-displayPercent)/(32)
+    displayPercent+=(totalPercent-displayPercent)/(32/delta)
 
     ctx.clearRect(0,0,1000,1000)
     
@@ -185,6 +181,7 @@ function drawStuff(timestamp){
     
     if(displayPercent>totalPercent-2 && confettTimes>0){
         firework.play()
+        cheer.play()
         confettTimes--;
         confettNeed=totalPercent*50;
     }
@@ -203,26 +200,7 @@ function drawStuff(timestamp){
         confettum.push(new ConFetti(500,1000+Math.random()*500,Math.random()*40-20,Math.random()*-50,tempConfColor,i%4*50));
     }
     
-    //bouncy logo
-    //size is 50x50
-    var logoWidth=100;
-    var logoHeight=100;
-    bctx.clearRect(0,0,bouncyCanvas.width,bouncyCanvas.height);
-    bctx.drawImage(logo610,bouncyX,bouncyY,logoWidth,logoHeight);
-    bouncyX+=bouncySX;
-    bouncyY+=bouncySY;
-    if(bouncyX<0){
-        bouncyX=0; bouncySX*=-1;
-    }
-    if(bouncyX+logoWidth>bouncyCanvas.width){
-        bouncyX=bouncyCanvas.width-logoWidth; bouncySX*=-1;
-    }
-    if(bouncyY<0){
-        bouncyY=0; bouncySY*=-1;
-    }
-    if(bouncyY+logoHeight>bouncyCanvas.height){
-        bouncyY=bouncyCanvas.height-logoHeight; bouncySY*=-1;
-    }
+    
 
 
     requestAnimationFrame(drawStuff);
@@ -250,7 +228,8 @@ document.addEventListener("keypress",function(ev){
 inputBar.addEventListener("blur",function(){
     setTimeout(function(){inputBar.focus()},0)
 })
-window.addEventListener("resize",bouncySize)
-document.addEventListener("scroll",bouncySize)//use this to resize bouncy canvas
+window.addEventListener("resize",sizeImage)
+document.addEventListener("scroll",sizeImage)
+sizeImage();
 
 requestAnimationFrame(drawStuff);

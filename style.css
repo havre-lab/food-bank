@@ -7,16 +7,22 @@ body{
     display:flex;
     justify-content:center;
     width:100vw;
+    align-items:center;
 }
+
 .displaybox{
-    aspect-ratio:1/1;
-    max-width:33.3333vw;
-    max-height:50vh;
+    width:0;
+    height: 0;
 }
+#drawing{
+    aspect-ratio: 1/1;
+    max-height:75vh;
+}
+
 .text{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size:2.5vh;
+    font-size:4vh;
 }
-#bouncy{
-    width:100vw;
+.small{
+    font-size:0.5vh;
 }
