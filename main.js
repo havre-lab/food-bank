@@ -29,10 +29,11 @@ function sizeImage(){
     var right=document.getElementById("right");
     var boundingBox=mainCanvas.getBoundingClientRect();
     var pixelDiff=100
-    left.style.width=boundingBox.left-pixelDiff+"px";
-    left.style.height=boundingBox.left-pixelDiff+"px";
-    right.style.width=(window.innerWidth-boundingBox.right)-pixelDiff+"px";
-    right.style.height=(window.innerWidth-boundingBox.right)-pixelDiff+"px";
+    var size=(window.innerWidth-boundingBox.width)/2-pixelDiff;
+    left.style.width=size+"px";
+    left.style.height=size+"px";
+    right.style.width=size+"px";
+    right.style.height=size+"px";
 }
 
 class ConFetti{
